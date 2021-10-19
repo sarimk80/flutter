@@ -22,7 +22,7 @@ import 'package:flutter_tools/src/project.dart';
 import 'package:test/fake.dart';
 
 import '../../src/common.dart';
-import '../../src/context.dart';
+import '../../src/fake_process_manager.dart';
 
 void main() {
   testWithoutContext('AndroidDevice stores the requested id', () {
@@ -56,7 +56,7 @@ void main() {
     );
     final AndroidDevice linuxDevice = setUpAndroidDevice(
       processManager: FakeProcessManager.list(commands.toList()),
-      platform: FakePlatform(operatingSystem: 'linux'),
+      platform: FakePlatform(),
     );
     final AndroidDevice macOsDevice = setUpAndroidDevice(
       processManager: FakeProcessManager.list(commands.toList()),
@@ -469,7 +469,7 @@ AndroidDevice setUpAndroidDevice({
   androidSdk ??= FakeAndroidSdk();
   return AndroidDevice(id ?? '1234',
     logger: BufferLogger.test(),
-    platform: platform ?? FakePlatform(operatingSystem: 'linux'),
+    platform: platform ?? FakePlatform(),
     androidSdk: androidSdk,
     fileSystem: fileSystem ?? MemoryFileSystem.test(),
     processManager: processManager ?? FakeProcessManager.any(),

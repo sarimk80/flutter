@@ -234,7 +234,7 @@ class IdeConfigCommand extends FlutterCommand {
 
     globals.printStatus('Updating IDE configuration for Flutter tree at $dirPath...');
     int generatedCount = 0;
-    generatedCount += _renderTemplate(_ideName, dirPath, <String, dynamic>{
+    generatedCount += _renderTemplate(_ideName, dirPath, <String, Object>{
       'withRootModule': boolArg('with-root-module'),
       'android': true,
     });
@@ -247,13 +247,12 @@ class IdeConfigCommand extends FlutterCommand {
     return FlutterCommandResult.success();
   }
 
-  int _renderTemplate(String templateName, String dirPath, Map<String, dynamic> context) {
+  int _renderTemplate(String templateName, String dirPath, Map<String, Object> context) {
     final Template template = Template(
-      _templateDirectory,
       _templateDirectory,
       null,
       fileSystem: globals.fs,
-      templateManifest: null,
+      templateManifest: <Uri>{},
       logger: globals.logger,
       templateRenderer: globals.templateRenderer,
     );
@@ -270,11 +269,14 @@ class IdeConfigCommand extends FlutterCommand {
 String _validateFlutterDir(String dirPath, { String flutterRoot }) {
   final FileSystemEntityType type = globals.fs.typeSync(dirPath);
 
-  switch (type) {
+  switch (type) { // ignore: exhaustive_cases, https://github.com/dart-lang/linter/issues/3017
     case FileSystemEntityType.link:
       // Do not overwrite links.
       return "Invalid project root dir: '$dirPath' - refers to a link.";
-    default:
+    case FileSystemEntityType.file:
+    case FileSystemEntityType.directory:
+    case FileSystemEntityType.notFound:
       return null;
   }
+  return null; // dead code, remove after null safety migration
 }

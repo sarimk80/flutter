@@ -15,6 +15,7 @@ import 'stack_frame.dart';
 // late bool draconisAlive;
 // late bool draconisAmulet;
 // late Diagnosticable draconis;
+// void methodThatMayThrow() { }
 
 /// Signature for [FlutterError.onError] handler.
 typedef FlutterExceptionHandler = void Function(FlutterErrorDetails details);
@@ -227,7 +228,7 @@ abstract class _ErrorDiagnostic extends DiagnosticsProperty<List<Object>> {
 
   @override
   String valueToString({ TextTreeConfiguration? parentConfiguration }) {
-    return value.join('');
+    return value.join();
   }
 }
 
@@ -532,7 +533,7 @@ class FlutterErrorDetails with Diagnosticable {
   /// dump this error to the console.
   ///
   /// If this is true, then the default error handler would only dump this error
-  /// to the console in checked mode. In release mode, the error is ignored.
+  /// to the console in debug mode. In release mode, the error is ignored.
   ///
   /// This is used by certain exception handlers that catch errors that could be
   /// triggered by environmental conditions (as opposed to logic errors). For
@@ -866,7 +867,9 @@ class FlutterError extends Error with DiagnosticableTreeMixin implements Asserti
   /// The default behavior is to call [presentError].
   ///
   /// You can set this to your own function to override this default behavior.
-  /// For example, you could report all errors to your server.
+  /// For example, you could report all errors to your server. Consider calling
+  /// [presentError] from your custom error handler in order to see the logs in
+  /// the console as well.
   ///
   /// If the error handler throws an exception, it will not be caught by the
   /// Flutter framework.
@@ -876,9 +879,12 @@ class FlutterError extends Error with DiagnosticableTreeMixin implements Asserti
   ///
   /// Do not call [onError] directly, instead, call [reportError], which
   /// forwards to [onError] if it is not null.
-  static FlutterExceptionHandler? onError = _defaultErrorHandler;
-
-  static void _defaultErrorHandler(FlutterErrorDetails details) => presentError(details);
+  ///
+  /// See also:
+  ///
+  ///  * <https://flutter.dev/docs/testing/errors>, more information about error
+  ///    handling in Flutter.
+  static FlutterExceptionHandler? onError = presentError;
 
   /// Called by the Flutter framework before attempting to parse a [StackTrace].
   ///
@@ -951,7 +957,7 @@ class FlutterError extends Error with DiagnosticableTreeMixin implements Asserti
     assert(details.exception != null);
     bool isInDebugMode = false;
     assert(() {
-      // In checked mode, we ignore the "silent" flag.
+      // In debug mode, we ignore the "silent" flag.
       isInDebugMode = true;
       return true;
     }());
@@ -963,7 +969,6 @@ class FlutterError extends Error with DiagnosticableTreeMixin implements Asserti
       if (isInDebugMode) {
         debugPrint(
           TextTreeRenderer(
-            wrapWidth: wrapWidth,
             wrapWidthProperties: wrapWidth,
             maxDescendentsTruncatableNode: 5,
           ).render(details.toDiagnosticsNode(style: DiagnosticsTreeStyle.error)).trimRight(),
@@ -1036,7 +1041,7 @@ class FlutterError extends Error with DiagnosticableTreeMixin implements Asserti
         index -= 1;
       }
     }
-    final List<String?> reasons = List<String?>.filled(parsedFrames.length, null, growable: false);
+    final List<String?> reasons = List<String?>.filled(parsedFrames.length, null);
     for (final StackFilter filter in _stackFilters) {
       filter.filter(parsedFrames, reasons);
     }
@@ -1101,6 +1106,31 @@ class FlutterError extends Error with DiagnosticableTreeMixin implements Asserti
   }
 
   /// Calls [onError] with the given details, unless it is null.
+  ///
+  /// {@tool snippet}
+  /// When calling this from a `catch` block consider annotating the method
+  /// containing the `catch` block with
+  /// `@pragma('vm:notify-debugger-on-exception')` to allow an attached debugger
+  /// to treat the exception as unhandled. This means instead of executing the
+  /// `catch` block, the debugger can break at the original source location from
+  /// which the exception was thrown.
+  ///
+  /// ```dart
+  /// @pragma('vm:notify-debugger-on-exception')
+  /// void doSomething() {
+  ///   try {
+  ///     methodThatMayThrow();
+  ///   } catch (exception, stack) {
+  ///     FlutterError.reportError(FlutterErrorDetails(
+  ///       exception: exception,
+  ///       stack: stack,
+  ///       library: 'example library',
+  ///       context: ErrorDescription('while doing something'),
+  ///     ));
+  ///   }
+  /// }
+  /// ```
+  /// {@end-tool}
   static void reportError(FlutterErrorDetails details) {
     assert(details != null);
     assert(details.exception != null);
@@ -1194,6 +1224,9 @@ class DiagnosticsStackTrace extends DiagnosticsBlock {
   static DiagnosticsNode _createStackFrame(String frame) {
     return DiagnosticsNode.message(frame, allowWrap: false);
   }
+
+  @override
+  bool get allowTruncate => false;
 }
 
 class _FlutterErrorDetailsNode extends DiagnosticableNode<FlutterErrorDetails> {
@@ -1210,7 +1243,7 @@ class _FlutterErrorDetailsNode extends DiagnosticableNode<FlutterErrorDetails> {
   @override
   DiagnosticPropertiesBuilder? get builder {
     final DiagnosticPropertiesBuilder? builder = super.builder;
-    if (builder == null){
+    if (builder == null) {
       return null;
     }
     Iterable<DiagnosticsNode> properties = builder.properties;

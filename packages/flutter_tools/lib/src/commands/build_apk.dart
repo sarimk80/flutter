@@ -35,6 +35,7 @@ class BuildApkCommand extends BuildSubCommand {
     addNullSafetyModeOptions(hide: !verboseHelp);
     usesAnalyzeSizeFlag();
     addAndroidSpecificBuildOptions(hide: !verboseHelp);
+    addMultidexOption();
     argParser
       ..addFlag('split-per-abi',
         negatable: false,
@@ -63,30 +64,30 @@ class BuildApkCommand extends BuildSubCommand {
     "This command can build debug and release versions of your application. 'debug' builds support "
     "debugging and a quick development cycle. 'release' builds don't support debugging and are "
     'suitable for deploying to app stores. If you are deploying the app to the Play Store, '
-    'it\'s recommended to use app bundles or split the APK to reduce the APK size. Learn more at:\n\n'
+    "it's recommended to use app bundles or split the APK to reduce the APK size. Learn more at:\n\n"
     ' * https://developer.android.com/guide/app-bundle\n'
     ' * https://developer.android.com/studio/build/configure-apk-splits#configure-abi-split';
 
   @override
-  Future<Map<CustomDimensions, String>> get usageValues async {
-    final Map<CustomDimensions, String> usage = <CustomDimensions, String>{};
-
-    usage[CustomDimensions.commandBuildApkTargetPlatform] =
-        stringsArg('target-platform').join(',');
-    usage[CustomDimensions.commandBuildApkSplitPerAbi] =
-        boolArg('split-per-abi').toString();
+  Future<CustomDimensions> get usageValues async {
+    String buildMode;
 
     if (boolArg('release')) {
-      usage[CustomDimensions.commandBuildApkBuildMode] = 'release';
+      buildMode = 'release';
     } else if (boolArg('debug')) {
-      usage[CustomDimensions.commandBuildApkBuildMode] = 'debug';
+      buildMode = 'debug';
     } else if (boolArg('profile')) {
-      usage[CustomDimensions.commandBuildApkBuildMode] = 'profile';
+      buildMode = 'profile';
     } else {
       // The build defaults to release.
-      usage[CustomDimensions.commandBuildApkBuildMode] = 'release';
+      buildMode = 'release';
     }
-    return usage;
+
+    return CustomDimensions(
+      commandBuildApkTargetPlatform: stringsArg('target-platform').join(','),
+      commandBuildApkBuildMode: buildMode,
+      commandBuildApkSplitPerAbi: boolArg('split-per-abi'),
+    );
   }
 
   @override
@@ -99,9 +100,11 @@ class BuildApkCommand extends BuildSubCommand {
       buildInfo,
       splitPerAbi: boolArg('split-per-abi'),
       targetArchs: stringsArg('target-platform').map<AndroidArch>(getAndroidArchForName),
+      multidexEnabled: boolArg('multidex'),
     );
     validateBuild(androidBuildInfo);
     displayNullSafetyMode(androidBuildInfo.buildInfo);
+    globals.terminal.usesTerminalUi = true;
     await androidBuilder.buildApk(
       project: FlutterProject.current(),
       target: targetFile,

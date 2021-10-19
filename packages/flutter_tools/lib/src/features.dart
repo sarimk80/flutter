@@ -47,9 +47,6 @@ abstract class FeatureFlags {
   /// Whether fast single widget reloads are enabled.
   bool get isSingleWidgetReloadEnabled => false;
 
-  /// Whether the CFE experimental invalidation strategy is enabled.
-  bool get isExperimentalInvalidationStrategyEnabled => true;
-
   /// Whether the windows UWP embedding is enabled.
   bool get isWindowsUwpEnabled => false;
 
@@ -71,7 +68,6 @@ const List<Feature> allFeatures = <Feature>[
   flutterIOSFeature,
   flutterFuchsiaFeature,
   flutterCustomDevicesFeature,
-  experimentalInvalidationStrategy,
 ];
 
 /// The [Feature] for flutter web.
@@ -85,15 +81,15 @@ const Feature flutterWebFeature = Feature(
   ),
   dev: FeatureChannelSetting(
     available: true,
-    enabledByDefault: flutterNext,
+    enabledByDefault: true,
   ),
   beta: FeatureChannelSetting(
     available: true,
-    enabledByDefault: flutterNext,
+    enabledByDefault: true,
   ),
   stable: FeatureChannelSetting(
-    available: flutterNext,
-    enabledByDefault: flutterNext,
+    available: true,
+    enabledByDefault: true,
   ),
 );
 
@@ -102,23 +98,18 @@ const Feature flutterMacOSDesktopFeature = Feature(
   name: 'beta-quality support for desktop on macOS',
   configSetting: 'enable-macos-desktop',
   environmentOverride: 'FLUTTER_MACOS',
-  extraHelpText: flutterNext ?
-      'Newer beta versions are available on the beta channel.' : null,
+  extraHelpText: 'Newer beta versions are available on the beta channel.',
   master: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   dev: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   beta: FeatureChannelSetting(
-    available: flutterNext,
-    enabledByDefault: false,
+    available: true,
   ),
   stable: FeatureChannelSetting(
-    available: flutterNext,
-    enabledByDefault: false,
+    available: true,
   ),
 );
 
@@ -127,23 +118,18 @@ const Feature flutterLinuxDesktopFeature = Feature(
   name: 'beta-quality support for desktop on Linux',
   configSetting: 'enable-linux-desktop',
   environmentOverride: 'FLUTTER_LINUX',
-  extraHelpText: flutterNext ?
-      'Newer beta versions are available on the beta channel.' : null,
+  extraHelpText: 'Newer beta versions are available on the beta channel.',
   master: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   dev: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   beta: FeatureChannelSetting(
-    available: flutterNext,
-    enabledByDefault: false,
+    available: true,
   ),
   stable: FeatureChannelSetting(
-    available: flutterNext,
-    enabledByDefault: false,
+    available: true,
   ),
 );
 
@@ -152,23 +138,18 @@ const Feature flutterWindowsDesktopFeature = Feature(
   name: 'beta-quality support for desktop on Windows',
   configSetting: 'enable-windows-desktop',
   environmentOverride: 'FLUTTER_WINDOWS',
-  extraHelpText: flutterNext ?
-      'Newer beta versions are available on the beta channel.' : null,
+  extraHelpText: 'Newer beta versions are available on the beta channel.',
   master: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   dev: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   beta: FeatureChannelSetting(
-    available: flutterNext,
-    enabledByDefault: false,
+    available: true,
   ),
   stable: FeatureChannelSetting(
-    available: flutterNext,
-    enabledByDefault: false,
+    available: true,
   ),
 );
 
@@ -224,7 +205,6 @@ const Feature flutterFuchsiaFeature = Feature(
   environmentOverride: 'FLUTTER_FUCHSIA',
   master: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
 );
 
@@ -234,19 +214,9 @@ const Feature flutterCustomDevicesFeature = Feature(
   environmentOverride: 'FLUTTER_CUSTOM_DEVICES',
   master: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   dev: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
-  ),
-  beta: FeatureChannelSetting(
-    available: false,
-    enabledByDefault: false,
-  ),
-  stable: FeatureChannelSetting(
-    available: false,
-    enabledByDefault: false,
   )
 );
 
@@ -261,48 +231,21 @@ const Feature singleWidgetReload = Feature(
   ),
   dev: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
   ),
   beta: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
-  ),
-  stable: FeatureChannelSetting(
-    available: false,
-    enabledByDefault: false,
   ),
 );
 
-/// The CFE experimental invalidation strategy.
-const Feature experimentalInvalidationStrategy = Feature(
-  name: 'Hot reload optimization that reduces incremental artifact size',
-  configSetting: 'experimental-invalidation-strategy',
-  environmentOverride: 'FLUTTER_CFE_EXPERIMENTAL_INVALIDATION',
-  master: FeatureChannelSetting(
-    available: true,
-    enabledByDefault: true,
-  ),
-  dev: FeatureChannelSetting(
-    available: true,
-    enabledByDefault: true,
-  ),
-  beta: FeatureChannelSetting(
-    available: true,
-    enabledByDefault: true,
-  ),
-  stable: FeatureChannelSetting(
-    available: true,
-    enabledByDefault: true,
-  ),
-);
-
-/// The feature for enabling the Windows UWP embeding.
+/// The feature for enabling the Windows UWP embedding.
 const Feature windowsUwpEmbedding = Feature(
   name: 'Flutter for Windows UWP',
   configSetting: 'enable-windows-uwp-desktop',
   master: FeatureChannelSetting(
     available: true,
-    enabledByDefault: false,
+  ),
+  dev: FeatureChannelSetting(
+    available: true,
   ),
 );
 
@@ -423,5 +366,3 @@ class FeatureChannelSetting {
   /// If not provided, defaults to `false`.
   final bool enabledByDefault;
 }
-
-const bool flutterNext = true;

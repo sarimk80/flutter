@@ -39,6 +39,7 @@ class BuildAppBundleCommand extends BuildSubCommand {
     addEnableExperimentation(hide: !verboseHelp);
     usesAnalyzeSizeFlag();
     addAndroidSpecificBuildOptions(hide: !verboseHelp);
+    addMultidexOption();
     argParser.addMultiOption('target-platform',
       splitCommas: true,
       defaultsTo: <String>['android-arm', 'android-arm64', 'android-x64'],
@@ -82,23 +83,24 @@ class BuildAppBundleCommand extends BuildSubCommand {
       'suitable for deploying to app stores. \n app bundle improves your app size';
 
   @override
-  Future<Map<CustomDimensions, String>> get usageValues async {
-    final Map<CustomDimensions, String> usage = <CustomDimensions, String>{};
-
-    usage[CustomDimensions.commandBuildAppBundleTargetPlatform] =
-        stringsArg('target-platform').join(',');
+  Future<CustomDimensions> get usageValues async {
+    String buildMode;
 
     if (boolArg('release')) {
-      usage[CustomDimensions.commandBuildAppBundleBuildMode] = 'release';
+      buildMode = 'release';
     } else if (boolArg('debug')) {
-      usage[CustomDimensions.commandBuildAppBundleBuildMode] = 'debug';
+      buildMode = 'debug';
     } else if (boolArg('profile')) {
-      usage[CustomDimensions.commandBuildAppBundleBuildMode] = 'profile';
+      buildMode = 'profile';
     } else {
       // The build defaults to release.
-      usage[CustomDimensions.commandBuildAppBundleBuildMode] = 'release';
+      buildMode = 'release';
     }
-    return usage;
+
+    return CustomDimensions(
+      commandBuildAppBundleTargetPlatform: stringsArg('target-platform').join(','),
+      commandBuildAppBundleBuildMode: buildMode,
+    );
   }
 
   @override
@@ -109,6 +111,7 @@ class BuildAppBundleCommand extends BuildSubCommand {
 
     final AndroidBuildInfo androidBuildInfo = AndroidBuildInfo(await getBuildInfo(),
       targetArchs: stringsArg('target-platform').map<AndroidArch>(getAndroidArchForName),
+      multidexEnabled: boolArg('multidex'),
     );
     // Do all setup verification that doesn't involve loading units. Checks that
     // require generated loading units are done after gen_snapshot in assemble.
@@ -118,7 +121,6 @@ class BuildAppBundleCommand extends BuildSubCommand {
         globals.logger,
         globals.platform,
         title: 'Deferred components prebuild validation',
-        exitOnFail: true,
       );
       validator.clearOutputDir();
       await validator.checkAndroidDynamicFeature(FlutterProject.current().manifest.deferredComponents);
@@ -144,6 +146,7 @@ class BuildAppBundleCommand extends BuildSubCommand {
 
     validateBuild(androidBuildInfo);
     displayNullSafetyMode(androidBuildInfo.buildInfo);
+    globals.terminal.usesTerminalUi = true;
     await androidBuilder.buildAab(
       project: FlutterProject.current(),
       target: targetFile,

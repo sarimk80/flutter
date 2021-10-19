@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(goderbauer): Remove this ignore when the documentation for the
+//   now private, then public typedefs is clear.
+// ignore_for_file: library_private_types_in_public_api
+
 @JS()
 library js_location_strategy;
 
@@ -19,7 +23,7 @@ typedef _JsSetUrlStrategy = void Function(JsUrlStrategy?);
 /// A JavaScript hook to customize the URL strategy of a Flutter app.
 //
 // Keep this in sync with the JS name in the web engine. Find it at:
-// https://github.com/flutter/engine/blob/custom_location_strategy/lib/web_ui/lib/src/engine/navigation/js_url_strategy.dart
+// https://github.com/flutter/engine/blob/master/lib/web_ui/lib/src/engine/navigation/js_url_strategy.dart
 //
 // TODO(mdebbar): Add integration test https://github.com/flutter/flutter/issues/66852
 @JS('_flutter_web_set_location_strategy')
@@ -33,8 +37,7 @@ typedef _AddPopStateListener = ui.VoidCallback Function(html.EventListener);
 
 typedef _StringToString = String Function(String);
 
-typedef _StateOperation = void Function(
-    Object state, String title, String url);
+typedef _StateOperation = void Function(Object state, String title, String url);
 
 typedef _HistoryMove = Future<void> Function(int count);
 
@@ -100,12 +103,12 @@ abstract class JsUrlStrategy {
   /// Moves forwards or backwards through the history stack.
   ///
   /// A negative [count] value causes a backward move in the history stack. And
-  /// a positive [count] value causs a forward move.
+  /// a positive [count] value causes a forward move.
   ///
   /// Examples:
   ///
   /// * `go(-2)` moves back 2 steps in history.
-  /// * `go(3)` moves forward 3 steps in hisotry.
+  /// * `go(3)` moves forward 3 steps in history.
   ///
   /// See: https://developer.mozilla.org/en-US/docs/Web/API/History/go
   external Future<void> go(int count);

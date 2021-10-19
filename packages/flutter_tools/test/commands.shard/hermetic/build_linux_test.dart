@@ -28,7 +28,6 @@ import '../../src/test_flutter_command_runner.dart';
 const String _kTestFlutterRoot = '/flutter';
 
 final Platform linuxPlatform = FakePlatform(
-  operatingSystem: 'linux',
   environment: <String, String>{
     'FLUTTER_ROOT': _kTestFlutterRoot,
     'HOME': '/',
@@ -130,12 +129,26 @@ void main() {
 
     expect(createTestCommandRunner(command).run(
       const <String>['build', 'linux', '--no-pub']
-    ), throwsToolExit());
+    ), throwsToolExit(message: '"build linux" only supported on Linux hosts.'));
   }, overrides: <Type, Generator>{
     Platform: () => notLinuxPlatform,
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
     FeatureFlags: () => TestFeatureFlags(isLinuxEnabled: true),
+  });
+
+  testUsingContext('Linux build fails when feature is disabled', () async {
+    final BuildCommand command = BuildCommand();
+    setUpMockProjectFilesForBuild();
+
+    expect(createTestCommandRunner(command).run(
+        const <String>['build', 'linux', '--no-pub']
+    ), throwsToolExit(message: '"build linux" is not currently supported. To enable, run "flutter config --enable-linux-desktop".'));
+  }, overrides: <Type, Generator>{
+    Platform: () => linuxPlatform,
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+    FeatureFlags: () => TestFeatureFlags(),
   });
 
   testUsingContext('Linux build invokes CMake and ninja, and writes temporary files', () async {
@@ -479,13 +492,13 @@ set(BINARY_NAME "fizz_bar")
     expect(() => runner.run(<String>['build', 'linux', '--no-pub']),
       throwsToolExit());
   }, overrides: <Type, Generator>{
-    FeatureFlags: () => TestFeatureFlags(isLinuxEnabled: false),
+    FeatureFlags: () => TestFeatureFlags(),
   });
 
   testUsingContext('hidden when not enabled on Linux host', () {
     expect(BuildLinuxCommand(operatingSystemUtils: FakeOperatingSystemUtils()).hidden, true);
   }, overrides: <Type, Generator>{
-    FeatureFlags: () => TestFeatureFlags(isLinuxEnabled: false),
+    FeatureFlags: () => TestFeatureFlags(),
     Platform: () => notLinuxPlatform,
   });
 

@@ -112,7 +112,7 @@ class BasicDeferredComponentsConfig extends DeferredComponentsConfig {
       ext.kotlin_version = '1.3.50'
       repositories {
           google()
-          jcenter()
+          mavenCentral()
       }
 
       dependencies {
@@ -124,13 +124,15 @@ class BasicDeferredComponentsConfig extends DeferredComponentsConfig {
   allprojects {
       repositories {
           google()
-          jcenter()
+          mavenCentral()
       }
   }
 
   rootProject.buildDir = '../build'
   subprojects {
       project.buildDir = "${rootProject.buildDir}/${project.name}"
+  }
+  subprojects {
       project.evaluationDependsOn(':app')
   }
 
@@ -175,7 +177,7 @@ class BasicDeferredComponentsConfig extends DeferredComponentsConfig {
   apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
   android {
-      compileSdkVersion 30
+      compileSdkVersion flutter.compileSdkVersion
 
       sourceSets {
           main.java.srcDirs += 'src/main/kotlin'
@@ -186,10 +188,10 @@ class BasicDeferredComponentsConfig extends DeferredComponentsConfig {
       }
 
       defaultConfig {
-          // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+          // Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
           applicationId "ninja.qian.splitaottest1"
-          minSdkVersion 16
-          targetSdkVersion 30
+          minSdkVersion flutter.minSdkVersion
+          targetSdkVersion flutter.targetSdkVersion
           versionCode flutterVersionCode.toInteger()
           versionName flutterVersionName
       }
@@ -203,7 +205,7 @@ class BasicDeferredComponentsConfig extends DeferredComponentsConfig {
       }
       buildTypes {
           release {
-              // TODO: Add your own signing config for the release build.
+              // Add your own signing config for the release build.
               // Signing with the debug keys for now, so `flutter run --release` works.
               signingConfig signingConfigs.release
           }

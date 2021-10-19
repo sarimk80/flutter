@@ -20,7 +20,6 @@ import '../../src/context.dart';
 const String home = '/home/me';
 
 final Platform linuxPlatform = FakePlatform(
-  operatingSystem: 'linux',
   environment: <String, String>{'HOME': home}
 );
 
@@ -30,7 +29,7 @@ void main() {
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
-    fakeProcessManager = FakeProcessManager.list(<FakeCommand>[]);
+    fakeProcessManager = FakeProcessManager.empty();
   });
 
   testWithoutContext('NoAndroidStudioValidator shows Android Studio as "not available" when not available.', () async {
